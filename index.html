@@ -619,6 +619,28 @@
   }
 
   @media (max-width: 600px) {
+    /* Sidebar plein écran sur mobile */
+    #sidebar {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100% !important;
+      min-width: 100% !important;
+      height: 100%;
+      z-index: 200;
+      transform: translateX(-100%);
+      transition: transform 0.25s ease;
+    }
+    #sidebar.mobile-open {
+      transform: translateX(0);
+    }
+    #sidebar.collapsed {
+      transform: translateX(-100%);
+      width: 100% !important;
+      min-width: 100% !important;
+      overflow: visible;
+    }
+
+    /* Input collé aux bords, plus grand */
     #input-area {
       padding: 0;
     }
@@ -626,10 +648,17 @@
       border-left: none;
       border-right: none;
       border-radius: 12px 12px 0 0;
+      padding: 20px 16px 20px;
+      min-height: 80px;
+    }
+    #user-input {
+      min-height: 44px;
+      font-size: 16px; /* évite le zoom auto iOS */
     }
     .input-hint {
       border-left: none;
       border-right: none;
+      padding: 8px 0 0;
     }
   }
 
@@ -1090,7 +1119,12 @@ function saveSettings() {
 }
 
 function toggleSidebar() {
-  document.getElementById('sidebar').classList.toggle('collapsed');
+  const sidebar = document.getElementById('sidebar');
+  if (window.innerWidth <= 600) {
+    sidebar.classList.toggle('mobile-open');
+  } else {
+    sidebar.classList.toggle('collapsed');
+  }
 }
 
 // ── CHAT ─────────────────────────────────────────────
