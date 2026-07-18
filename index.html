@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Chat</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,6 +14,8 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  * { -webkit-tap-highlight-color: transparent; }
+  button, a, label { touch-action: manipulation; }
 
   :root {
     --bg: #0D0D0D;
@@ -265,6 +267,7 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    position: relative;
   }
 
   #topbar {
@@ -327,7 +330,7 @@
   #messages {
     flex: 1;
     overflow-y: auto;
-    padding: 24px 0;
+    padding: 24px 0 180px;
     scroll-behavior: smooth;
   }
 
@@ -597,7 +600,7 @@
 
   #input-area {
     background: transparent;
-    padding: 0 max(32px, calc(50% - 380px));
+    padding: 16px max(32px, calc(50% - 380px)) 24px;
     flex-shrink: 0;
   }
 
@@ -607,8 +610,7 @@
     gap: 10px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-bottom: none;
-    border-radius: 12px 12px 0 0;
+    border-radius: 12px;
     padding: 20px 16px;
     transition: border-color 0.15s, background 0.15s;
   }
@@ -618,17 +620,68 @@
     background: var(--surface-2);
   }
 
+  /* ── INPUT FLOTTANT ──────────────────────────────── */
+
+  #input-area {
+    position: absolute;
+    bottom: 0;
+    left: 0; right: 0;
+    padding: 0 max(32px, calc(50% - 380px));
+    pointer-events: none;
+  }
+
+  .input-wrapper {
+    pointer-events: all;
+    box-shadow: 0 -4px 24px rgba(0,0,0,0.5), 0 0 0 1px var(--border);
+  }
+
+  /* ── BOUTON FERMER SIDEBAR (mobile uniquement) ──── */
+
+  .close-sidebar-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 4px;
+    margin-left: auto;
+    border-radius: 4px;
+    transition: color 0.15s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .close-sidebar-btn:hover { color: var(--text); }
+
+  /* ── OVERLAY SIDEBAR MOBILE ─────────────────────── */
+
+  #sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 199;
+    backdrop-filter: blur(2px);
+  }
+  #sidebar-overlay.visible { display: block; }
+
+  /* ── SUPPRESSION TAP HIGHLIGHT ──────────────────── */
+
+  * { -webkit-tap-highlight-color: transparent; }
+
+  /* ── MOBILE ─────────────────────────────────────── */
+
   @media (max-width: 600px) {
-    /* Sidebar plein écran sur mobile */
+    /* Sidebar plein écran */
     #sidebar {
       position: fixed;
-      top: 0; left: 0;
+      inset: 0;
       width: 100% !important;
       min-width: 100% !important;
       height: 100%;
-      z-index: 200;
+      z-index: 300;
       transform: translateX(-100%);
-      transition: transform 0.25s ease;
+      transition: transform 0.22s ease;
+      border-right: none;
+      overflow: hidden;
     }
     #sidebar.mobile-open {
       transform: translateX(0);
@@ -637,28 +690,42 @@
       transform: translateX(-100%);
       width: 100% !important;
       min-width: 100% !important;
-      overflow: visible;
     }
 
-    /* Input collé aux bords, plus grand */
+    /* Overlay */
+    #sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 299;
+      background: rgba(0,0,0,0.5);
+    }
+    #sidebar-overlay.visible { display: block; }
+
+    /* Bouton fermer visible mobile seulement */
+    .close-sidebar-btn { display: flex !important; }
+
+    /* Input : marges latérales + arrondi haut + grand */
     #input-area {
-      padding: 0;
+      padding: 16px 12px max(24px, env(safe-area-inset-bottom));
     }
     .input-wrapper {
-      border-left: none;
-      border-right: none;
-      border-radius: 12px 12px 0 0;
-      padding: 20px 16px 20px;
-      min-height: 80px;
+      border-radius: 12px;
+      padding: 18px 14px;
+      min-height: 72px;
     }
     #user-input {
-      min-height: 44px;
-      font-size: 16px; /* évite le zoom auto iOS */
+      min-height: 40px;
+      font-size: 16px;
     }
-    .input-hint {
-      border-left: none;
-      border-right: none;
-      padding: 8px 0 0;
+
+
+    /* Messages padding latéral réduit */
+    .message-row {
+      padding: 0 12px !important;
+    }
+    .turn-divider {
+      margin: 12px !important;
     }
   }
 
@@ -710,17 +777,7 @@
 
   #send-btn svg { width: 14px; height: 14px; }
 
-  .input-hint {
-    font-size: 11px;
-    color: var(--text-dimmer);
-    padding: 6px 0 0;
-    text-align: center;
-    letter-spacing: 0.02em;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-top: none;
-    border-bottom: none;
-  }
+
 
   /* ── EMPTY STATE ─────────────────────────────────── */
 
@@ -786,6 +843,21 @@
   .tab-panel::-webkit-scrollbar-track { background: transparent; }
   .tab-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
+  /* ── CLOSE SIDEBAR BTN (mobile only) ──────────── */
+  .close-sidebar-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 4px;
+    margin-left: auto;
+    border-radius: 4px;
+    align-items: center;
+    transition: color 0.15s;
+  }
+  .close-sidebar-btn:hover { color: var(--text); }
+
   /* ── NO CONFIG WARNING ─────────────────────────── */
 
   .no-config-banner {
@@ -828,6 +900,11 @@
   <div id="sidebar">
     <div class="sidebar-header">
       <span class="sidebar-logo">Chat</span>
+      <button class="close-sidebar-btn" onclick="toggleSidebar()" title="Fermer">
+        <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18">
+          <line x1="4" y1="4" x2="14" y2="14"/><line x1="14" y1="4" x2="4" y2="14"/>
+        </svg>
+      </button>
     </div>
     <div class="sidebar-tabs">
       <button class="tab-btn active" onclick="switchTab('params')">Paramètres</button>
@@ -946,11 +1023,11 @@
           </svg>
         </button>
       </div>
-      <p class="input-hint">Entrée pour envoyer · Maj+Entrée pour nouvelle ligne</p>
     </div>
   </div>
 </div>
 
+<div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 <div id="toast"></div>
 
 <script>
@@ -1120,8 +1197,11 @@ function saveSettings() {
 
 function toggleSidebar() {
   const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
   if (window.innerWidth <= 600) {
-    sidebar.classList.toggle('mobile-open');
+    const opening = !sidebar.classList.contains('mobile-open');
+    sidebar.classList.toggle('mobile-open', opening);
+    overlay.classList.toggle('visible', opening);
   } else {
     sidebar.classList.toggle('collapsed');
   }
