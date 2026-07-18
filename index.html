@@ -606,18 +606,13 @@
 
   .input-wrapper {
     display: flex;
-    align-items: flex-end;
+    align-items: center;
     gap: 10px;
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 20px 16px;
     transition: border-color 0.15s, background 0.15s;
-  }
-
-  .input-wrapper:focus-within {
-    border-color: var(--border-light);
-    background: var(--surface-2);
   }
 
   /* ── INPUT FLOTTANT ──────────────────────────────── */
@@ -716,7 +711,6 @@
       font-size: 16px;
     }
 
-
     /* Messages padding latéral réduit */
     .message-row {
       padding: 0 12px !important;
@@ -748,8 +742,8 @@
 
   #send-btn {
     background: var(--surface-3);
-    border: 1px solid var(--border-light);
-    color: var(--text-dim);
+    border: 1px solid #ffffff;
+    color: #ffffff;
     cursor: pointer;
     width: 32px;
     height: 32px;
@@ -763,8 +757,8 @@
 
   #send-btn:hover:not(:disabled) {
     background: #2A2A2A;
-    border-color: #444;
-    color: var(--text);
+    border-color: #ffffff;
+    color: #ffffff;
   }
 
   #send-btn:disabled {
@@ -772,9 +766,11 @@
     cursor: not-allowed;
   }
 
-  #send-btn svg { width: 14px; height: 14px; }
-
-
+  #send-btn svg { 
+    width: 14px; 
+    height: 14px; 
+    transform: rotate(-90deg);
+  }
 
   /* ── EMPTY STATE ─────────────────────────────────── */
 
@@ -1117,7 +1113,7 @@ function init() {
   if (saved.model) state.model = saved.model;
 
   document.getElementById('api-key-input').value = state.apiKey;
-  document.getElementById('model-input').value = state.model || PROVIDERS[state.provider].defaultModel;
+  document.getElementById('model-input').value = state.model || '';
   selectProvider(state.provider, false);
 
   checkConfigured();
@@ -1160,10 +1156,6 @@ function selectProvider(id, updateInput = true) {
   document.getElementById('opt-openrouter').classList.toggle('selected', id === 'openrouter');
   renderProviderInfo();
 
-  if (updateInput && !document.getElementById('model-input').value) {
-    document.getElementById('model-input').value = PROVIDERS[id].defaultModel;
-  }
-
   document.getElementById('model-hint').textContent = PROVIDERS[id].modelHint;
 }
 
@@ -1178,7 +1170,7 @@ function renderProviderInfo() {
 
 function saveSettings() {
   state.apiKey = document.getElementById('api-key-input').value.trim();
-  state.model = document.getElementById('model-input').value.trim() || PROVIDERS[state.provider].defaultModel;
+  state.model = document.getElementById('model-input').value.trim();
   document.getElementById('model-input').value = state.model;
 
   localStorage.setItem('chat-config', JSON.stringify({
