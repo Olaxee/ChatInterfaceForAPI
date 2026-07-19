@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Chat</title>
+<title>ApiFace</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -53,6 +53,8 @@
   #app {
     display: flex;
     height: 100vh;
+    height: 100svh;
+    height: 100dvh;
     overflow: hidden;
   }
 
@@ -376,15 +378,18 @@
     align-items: center;
     gap: 10px;
     padding: 0 16px;
-    background: var(--bg);
-    position: relative;
+    background: transparent;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
     z-index: 5;
     flex-shrink: 0;
   }
 
   .toggle-sidebar-btn {
-    background: none;
-    border: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
     color: var(--text-dim);
     cursor: pointer;
     padding: 4px;
@@ -407,7 +412,8 @@
   }
 
   .new-chat-btn {
-    background: none;
+    margin-left: auto;
+    background: var(--surface);
     border: 1px solid var(--border);
     color: var(--text-dim);
     cursor: pointer;
@@ -429,19 +435,20 @@
   /* ── MODEL SELECTOR (header) ─────────────────────── */
 
   .model-select-wrap {
-    flex: 1;
+    flex: 0 0 auto;
     position: relative;
     min-width: 0;
   }
 
   .model-select-btn {
-    width: 100%;
+    width: auto;
+    max-width: 240px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    background: none;
-    border: 1px solid transparent;
+    background: var(--surface);
+    border: 1px solid var(--border);
     color: var(--text);
     cursor: pointer;
     padding: 6px 10px;
@@ -478,7 +485,7 @@
     position: absolute;
     top: calc(100% + 6px);
     left: 0;
-    right: 0;
+    min-width: 100%;
     background: var(--surface-2);
     border: 1px solid var(--border-light);
     border-radius: var(--radius);
@@ -598,8 +605,9 @@
 
   #messages {
     flex: 1;
+    height: 100%;
     overflow-y: auto;
-    padding: 24px 0 180px;
+    padding: 88px 0 180px;
     scroll-behavior: smooth;
     position: relative;
   }
@@ -869,18 +877,30 @@
   /* ── INPUT AREA ─────────────────────────────────── */
 
   #input-area {
-    background: transparent;
-    padding: 16px max(32px, calc(50% - 380px)) 24px;
+    position: absolute;
+    /* Mêmes marges latérales que .input-wrapper → largeurs identiques */
+    left: max(32px, calc(50% - 380px));
+    right: max(32px, calc(50% - 380px));
+    bottom: 0; /* colle au vrai bas : pas d'espace sous #input-area */
+    z-index: 1; /* au-dessus de #messages pour masquer le défilement */
+    /* Espace sous .input-wrapper (relevé) + safe-area pour dégager le home indicator */
+    padding: 0 0 calc(16px + env(safe-area-inset-bottom, 0px));
     flex-shrink: 0;
+    background: rgba(13, 13, 13, 0);
+    border-radius: 12px; /* même arrondi que .input-wrapper */
   }
 
   .input-wrapper {
+    flex: 1;
+    min-width: 0;
+    position: relative;
+    z-index: 1;
     display: flex;
     align-items: center;
     gap: 10px;
     background: var(--surface);
     border: 1px solid var(--border);
-    border-radius: 12px;
+    border-radius: 12px; /* identique à #input-area */
     padding: 20px 16px;
     transition: border-color 0.15s, background 0.15s;
   }
@@ -888,9 +908,152 @@
   /* ── INPUT FLOTTANT ──────────────────────────────── */
 
   #input-area {
-    padding: 16px max(32px, calc(50% - 380px)) 28px;
+    padding: 0 0 16px;
     flex-shrink: 0;
-    background: transparent;
+  }
+
+  .attach-btn {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-radius: var(--radius);
+    transition: color 0.15s, background 0.15s;
+  }
+  .attach-btn:hover {
+    color: var(--text);
+    background: var(--surface-2);
+  }
+  .attach-btn svg { flex-shrink: 0; }
+
+  .attach-menu {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    min-width: 180px;
+    background: var(--surface-2);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius);
+    padding: 4px;
+    z-index: 60;
+  }
+  .attach-menu.open { display: block; }
+  .attach-menu-item {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+    padding: 8px 10px;
+    border-radius: 4px;
+    font-family: var(--font);
+    font-size: 13px;
+    white-space: nowrap;
+  }
+  .attach-menu-item:hover { background: var(--surface-3); }
+
+  .attachments {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+  }
+  .attachments:empty { display: none; }
+
+  .attach-chip {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    max-width: 240px;
+    padding: 4px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+  .attach-chip-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .attach-chip-remove {
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1;
+    padding: 0 1px;
+  }
+  .attach-chip-remove:hover { color: #F44336; }
+
+  .msg-files {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 6px;
+  }
+  .msg-file-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .msg-file-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 100%;
+  }
+
+  .msg-media {
+    max-width: 100%;
+    max-height: 320px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    display: block;
+  }
+
+  .msg-file-name {
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  /* Miniature des médias dans les pièces jointes en attente */
+  .attach-chip-media {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+
+  .attach-chip.is-media {
+    padding-left: 4px;
   }
 
   .input-wrapper {
@@ -967,9 +1130,12 @@
     /* Bouton fermer visible mobile seulement */
     .close-sidebar-btn { display: flex !important; }
 
-    /* Input : marges latérales + arrondi haut + grand */
+    /* Input : mêmes marges latérales que .input-wrapper → largeurs identiques */
     #input-area {
-      padding: 16px 12px max(24px, env(safe-area-inset-bottom));
+      left: 12px;
+      right: 12px;
+      bottom: 0;
+      padding: 0 0 calc(12px + env(safe-area-inset-bottom, 0px));
     }
     .input-wrapper {
       border-radius: 12px;
@@ -987,6 +1153,11 @@
     }
     .turn-divider {
       margin: 12px !important;
+    }
+
+    /* Bouton modèle : largeur adaptative + "..." si nom trop long */
+    .model-select-btn {
+      max-width: 40vw;
     }
   }
 
@@ -1214,7 +1385,7 @@
   <!-- SIDEBAR -->
   <div id="sidebar">
     <div class="sidebar-header">
-      <span class="sidebar-logo">Chat</span>
+      <span class="sidebar-logo">ApiFace</span>
       <button class="close-sidebar-btn" onclick="toggleSidebar()" title="Fermer">
         <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18">
           <line x1="4" y1="4" x2="14" y2="14"/><line x1="14" y1="4" x2="4" y2="14"/>
@@ -1339,7 +1510,17 @@
     </div>
 
     <div id="input-area">
+      <div id="attachments" class="attachments"></div>
       <div class="input-wrapper">
+        <button id="attach-btn" class="attach-btn" onclick="toggleAttachMenu(event)" title="Ajouter des fichiers" aria-label="Ajouter des fichiers">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18">
+            <line x1="8" y1="3" x2="8" y2="13"/>
+            <line x1="3" y1="8" x2="13" y2="8"/>
+          </svg>
+        </button>
+        <div id="attach-menu" class="attach-menu">
+          <button class="attach-menu-item" onclick="document.getElementById('file-input').click(); closeAttachMenu()">Ajouter des fichiers</button>
+        </div>
         <textarea
           id="user-input"
           placeholder="Écrire un message…"
@@ -1353,6 +1534,7 @@
           </svg>
         </button>
       </div>
+      <input type="file" id="file-input" multiple hidden onchange="handleFiles(this)">
     </div>
   </div>
 </div>
@@ -1555,6 +1737,22 @@ function wakeMessage(el) {
 
 // ── INIT ─────────────────────────────────────────────
 
+// Hauteur fiable du viewport visible (gère la barre d'adresse mobile)
+function setAppHeight() {
+  const app = document.getElementById('app');
+  if (!app) return;
+  // visualViewport.height = hauteur réellement visible (suit la barre d'adresse)
+  const h = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+  app.style.height = h + 'px';
+}
+window.addEventListener('resize', setAppHeight);
+window.addEventListener('orientationchange', setAppHeight);
+// La barre d'adresse mobile modifie visualViewport sans forcément fire window.resize
+if (window.visualViewport) {
+  window.visualViewport.addEventListener('resize', setAppHeight);
+  window.visualViewport.addEventListener('scroll', setAppHeight);
+}
+
 function init() {
   const saved = JSON.parse(localStorage.getItem('chat-config') || '{}');
   if (saved.provider) state.provider = saved.provider;
@@ -1579,6 +1777,7 @@ function init() {
   }
   updateModelButton();
   updateSendBtn();
+  setAppHeight();
 }
 
 function checkConfigured() {
@@ -1783,6 +1982,7 @@ function newConversation() {
   state.currentConvId = conv.id;
   state.messages = conv.messages;
 
+  resetAttachments();
   showEmptyState();
   saveConversations();
   renderHistory();
@@ -1797,6 +1997,7 @@ function selectConversation(id) {
 
   state.currentConvId = id;
   state.messages = conv.messages;
+  resetAttachments();
   renderConversation(conv);
   renderHistory();
   updateSendBtn();
@@ -1877,7 +2078,7 @@ function autoResize(el) {
 
 function updateSendBtn() {
   const val = document.getElementById('user-input').value.trim();
-  document.getElementById('send-btn').disabled = !val || state.isLoading;
+  document.getElementById('send-btn').disabled = (!val && pendingFiles.length === 0) || state.isLoading;
 }
 
 function nowStr() {
@@ -1889,10 +2090,146 @@ function removeEmptyState() {
   if (es) es.remove();
 }
 
+// ── PIÈCES JOINTES (fichiers) ──────────────────────────
+
+let pendingFiles = [];
+const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2 Mo par fichier
+
+function formatSize(bytes) {
+  if (bytes < 1024) return bytes + ' o';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' Ko';
+  return (bytes / 1024 / 1024).toFixed(1) + ' Mo';
+}
+
+function isMedia(type) {
+  return (type || '').startsWith('image/') || (type || '').startsWith('video/');
+}
+
+function handleFiles(input) {
+  const files = Array.from(input.files || []);
+  for (const file of files) {
+    if (file.size > MAX_FILE_SIZE) {
+      showToast(`Fichier trop volumineux (max 2 Mo) : ${file.name}`);
+      continue;
+    }
+    const media = isMedia(file.type);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const entry = {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+      };
+      if (media) entry.dataUrl = String(reader.result || '');
+      else entry.content = String(reader.result || '');
+      pendingFiles.push(entry);
+      renderAttachments();
+      updateSendBtn();
+    };
+    reader.onerror = () => showToast(`Lecture impossible : ${file.name}`);
+    if (media) reader.readAsDataURL(file);
+    else reader.readAsText(file);
+  }
+  input.value = '';
+}
+
+function removeAttachment(idx) {
+  pendingFiles.splice(idx, 1);
+  renderAttachments();
+  updateSendBtn();
+}
+
+function renderAttachments() {
+  const box = document.getElementById('attachments');
+  box.innerHTML = '';
+  pendingFiles.forEach((f, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'attach-chip' + (f.dataUrl ? ' is-media' : '');
+
+    if (f.dataUrl) {
+      const thumb = document.createElement('img');
+      thumb.className = 'attach-chip-media';
+      thumb.src = f.dataUrl;
+      thumb.alt = f.name;
+      chip.appendChild(thumb);
+    }
+
+    const name = document.createElement('span');
+    name.className = 'attach-chip-name';
+    name.textContent = f.name;
+    name.title = `${f.name} — ${formatSize(f.size)}`;
+
+    const rm = document.createElement('button');
+    rm.className = 'attach-chip-remove';
+    rm.innerHTML = '&times;';
+    rm.title = 'Retirer';
+    rm.onclick = () => removeAttachment(i);
+
+    chip.appendChild(name);
+    chip.appendChild(rm);
+    box.appendChild(chip);
+  });
+}
+
+function resetAttachments() {
+  pendingFiles = [];
+  renderAttachments();
+  updateSendBtn();
+}
+
+function toggleAttachMenu(e) {
+  e?.stopPropagation();
+  const menu = document.getElementById('attach-menu');
+  if (menu) menu.classList.toggle('open');
+}
+
+function closeAttachMenu() {
+  const menu = document.getElementById('attach-menu');
+  if (menu) menu.classList.remove('open');
+}
+
+// Fermer le menu au clic extérieur
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('attach-menu');
+  const btn = document.getElementById('attach-btn');
+  if (!menu || !menu.classList.contains('open')) return;
+  if (menu.contains(e.target) || btn.contains(e.target)) return;
+  menu.classList.remove('open');
+});
+
+function buildUserMessage(text) {
+  return {
+    role: 'user',
+    content: text,
+    time: nowStr(),
+    files: pendingFiles.map(f => ({
+      name: f.name,
+      size: f.size,
+      type: f.type,
+      content: f.content,
+      dataUrl: f.dataUrl,
+    })),
+  };
+}
+
+// Contenu envoyé à l'API : texte + contenu des fichiers (sans le réafficher)
+function apiMessageContent(msg) {
+  let content = msg.content || '';
+  if (msg.files && msg.files.length) {
+    const parts = msg.files.map(f => {
+      if (f.dataUrl) return `--- Fichier : ${f.name} ---\n${f.dataUrl}`;
+      if (f.content != null) return `--- Fichier : ${f.name} ---\n${f.content}`;
+      return `--- Fichier : ${f.name} --- (${formatSize(f.size)})`;
+    });
+    content += (content ? '\n\n' : '') + parts.join('\n\n');
+  }
+  return content;
+}
+
 async function sendMessage() {
   const input = document.getElementById('user-input');
   const text = input.value.trim();
-  if (!text || state.isLoading) return;
+  if ((!text && pendingFiles.length === 0) || state.isLoading) return;
 
   if (!state.configured) {
     showToast('Configurez votre API dans les paramètres');
@@ -1926,9 +2263,12 @@ async function sendMessage() {
     });
   }
 
-  const userMsg = { role: 'user', content: text, time: nowStr() };
+  const userMsg = buildUserMessage(text);
   state.messages.push(userMsg);
   appendMessage(userMsg, false);
+
+  // Réinitialiser les pièces jointes après envoi
+  resetAttachments();
 
   const divider = document.createElement('hr');
   divider.className = 'turn-divider';
@@ -1981,11 +2321,11 @@ async function streamGoogle() {
 
   const geminiMessages = state.messages.slice(0, -1).map(m => ({
     role: m.role === 'assistant' ? 'model' : 'user',
-    parts: [{ text: m.content }],
+    parts: [{ text: apiMessageContent(m) }],
   }));
 
   const lastUser = state.messages[state.messages.length - 1];
-  geminiMessages.push({ role: 'user', parts: [{ text: lastUser.content }] });
+  geminiMessages.push({ role: 'user', parts: [{ text: apiMessageContent(lastUser) }] });
 
   const resp = await fetch(url, {
     method: 'POST',
@@ -2013,7 +2353,7 @@ async function streamOpenRouter() {
 
   const oaMessages = state.messages.map(m => ({
     role: m.role,
-    content: m.content,
+    content: apiMessageContent(m),
   }));
 
   const resp = await fetch(url, {
@@ -2101,6 +2441,18 @@ async function readSSEStream(resp, extractText) {
 
 // ── RENDER ───────────────────────────────────────────
 
+function renderFileItem(f) {
+  const type = f.type || '';
+  const safeName = escapeHtml(f.name);
+  if (type.startsWith('image/') && f.dataUrl) {
+    return `<div class="msg-file-item"><img class="msg-media" src="${f.dataUrl}" alt="${safeName}"><span class="msg-file-name">${safeName}</span></div>`;
+  }
+  if (type.startsWith('video/') && f.dataUrl) {
+    return `<div class="msg-file-item"><video class="msg-media" src="${f.dataUrl}" controls preload="metadata"></video><span class="msg-file-name">${safeName}</span></div>`;
+  }
+  return `<span class="msg-file-chip">📎 ${safeName}</span>`;
+}
+
 function buildMessageDOM(msg) {
   const row = document.createElement('div');
   row.className = `message-row ${msg.role}`;
@@ -2108,11 +2460,20 @@ function buildMessageDOM(msg) {
   if (msg.role === 'user') {
     const bubble = document.createElement('div');
     bubble.className = 'message-bubble';
+
+    let filesHtml = '';
+    if (msg.files && msg.files.length) {
+      filesHtml = '<div class="msg-files">' +
+        msg.files.map(f => renderFileItem(f)).join('') +
+        '</div>';
+    }
+
     bubble.innerHTML = `
       <div class="msg-header" style="justify-content: flex-end;">
         <span class="msg-time">${msg.time}</span>
         <span class="msg-role">Vous</span>
       </div>
+      ${filesHtml}
       <div class="msg-body">${escapeHtml(msg.content)}</div>
     `;
     row.appendChild(bubble);
