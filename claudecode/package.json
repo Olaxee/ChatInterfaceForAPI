@@ -1,0 +1,9 @@
+{
+  "name": "claudecode-ui",
+  "version": "1.0.0",
+  "description": "Interface de chat avec provider Claude Code (binaire local via server.js)",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  }
+}
